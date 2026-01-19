@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import authRoutes from "./routes/auth";
+import usersRoutes from "./routes/users";
 
 dotenv.config();
 
@@ -17,6 +19,9 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+
+app.use("/api/auth", authRoutes);
+app.use("/api/users", usersRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, status: "up" });

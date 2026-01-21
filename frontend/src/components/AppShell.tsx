@@ -135,9 +135,14 @@ export default function AppShell() {
       <div className="flex h-screen overflow-hidden bg-background text-foreground">
         <aside className="flex h-full w-60 flex-col border-r border-border bg-surface">
           <div className="px-5 py-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
-              SprintDesk
-            </div>
+            <Link to="/app/issues" className="inline-flex items-center">
+              <img
+                src="/sprintdesk-logo.png"
+                alt="SprintDesk"
+                className="w-[150px] h-auto"
+                loading="eager"
+              />
+            </Link>
             <div className="mt-6 space-y-2">
               <WorkspaceSwitcher />
               <Link

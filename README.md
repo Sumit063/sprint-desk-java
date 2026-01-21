@@ -1,14 +1,22 @@
-# SprintDesk (MERN)
+# SprintDesk
 
-Multi-tenant issue tracker + knowledge base. This repo is built in phased commits, keeping each day runnable.
+![SprintDesk](frontend/assets/sprintdesk-logo.png)
 
-## MVP Features
+SprintDesk is a multi-tenant issue tracker + knowledge base focused on crisp, editor-grade UI and team workflows. The repo is built in phased commits, keeping each stage runnable.
 
-- Auth with refresh token rotation (access token in memory, refresh in httpOnly cookie)
-- Workspaces + RBAC (owner/admin/member/viewer)
-- Issues with comments, assignees, and realtime updates
+## What it does
+
+- Workspaces with role-based access (owner/admin/member/viewer)
+- Issues with comments, assignees, priorities, and realtime updates
 - Knowledge base articles with markdown preview and linked issues
-- Notifications inbox for assignments and mentions
+- Notifications for assignments and mentions
+- Auth with JWT access + refresh rotation, Google sign-in, email OTP, and demo mode
+
+## Tech stack
+
+- Frontend: React + TypeScript (Vite), Tailwind CSS, Radix UI, Lucide icons
+- Backend: Node.js + Express, MongoDB + Mongoose, Socket.io
+- Auth: JWT + refresh cookies, Google ID token verification, SMTP OTP
 
 ## Quick Start (Docker)
 

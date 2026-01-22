@@ -19,7 +19,7 @@ export function useWorkspaceSocket() {
     }
 
     socket?.disconnect();
-    socket = io(import.meta.env.VITE_API_URL ?? "http://localhost:4000", {
+    socket = io(import.meta.env.VITE_API_URL ?? "http://localhost:8080", {
       auth: { token: accessToken }
     });
 

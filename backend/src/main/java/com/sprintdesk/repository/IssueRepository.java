@@ -16,6 +16,10 @@ public interface IssueRepository extends JpaRepository<Issue, UUID>, JpaSpecific
 
   Page<Issue> findByWorkspaceId(UUID workspaceId, Pageable pageable);
 
+  List<Issue> findByWorkspaceId(UUID workspaceId);
+
+  void deleteByWorkspaceId(UUID workspaceId);
+
   long countByWorkspaceIdAndCreatedBy(UUID workspaceId, UUID createdBy);
 
   long countByWorkspaceIdAndAssigneeId(UUID workspaceId, UUID assigneeId);

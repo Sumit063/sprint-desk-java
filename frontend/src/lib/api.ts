@@ -5,11 +5,21 @@ const api = axios.create({
   withCredentials: true
 });
 
-let accessToken: string | null = null;
+const TOKEN_STORAGE_KEY = "sprintdesk_access_token";
+let accessToken: string | null =
+  typeof window === "undefined" ? null : localStorage.getItem(TOKEN_STORAGE_KEY);
 let refreshPromise: Promise<string | null> | null = null;
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (token) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  }
 }
 
 export function getAccessToken() {

@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface WorkspaceInviteRepository extends JpaRepository<WorkspaceInvite, UUID> {
   @EntityGraph(attributePaths = {"workspace"})
   Optional<WorkspaceInvite> findByCode(String code);
+
+  void deleteByWorkspace_Id(UUID workspaceId);
 }

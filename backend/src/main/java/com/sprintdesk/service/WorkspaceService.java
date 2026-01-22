@@ -1,6 +1,7 @@
 package com.sprintdesk.service;
 
 import com.sprintdesk.dto.CreateWorkspaceRequest;
+import com.sprintdesk.dto.ArticleSummary;
 import com.sprintdesk.dto.IssueSummary;
 import com.sprintdesk.dto.MemberOverviewRecent;
 import com.sprintdesk.dto.MemberOverviewResponse;
@@ -14,6 +15,7 @@ import com.sprintdesk.model.Workspace;
 import com.sprintdesk.model.WorkspaceInvite;
 import com.sprintdesk.model.WorkspaceMember;
 import com.sprintdesk.model.WorkspaceRole;
+import com.sprintdesk.repository.ArticleRepository;
 import com.sprintdesk.repository.IssueRepository;
 import com.sprintdesk.repository.UserRepository;
 import com.sprintdesk.repository.WorkspaceInviteRepository;
@@ -37,6 +39,7 @@ public class WorkspaceService {
   private final WorkspaceInviteRepository inviteRepository;
   private final UserRepository userRepository;
   private final IssueRepository issueRepository;
+  private final ArticleRepository articleRepository;
   private final SecureRandom random = new SecureRandom();
 
   public WorkspaceService(
@@ -44,12 +47,14 @@ public class WorkspaceService {
       WorkspaceMemberRepository memberRepository,
       WorkspaceInviteRepository inviteRepository,
       UserRepository userRepository,
-      IssueRepository issueRepository) {
+      IssueRepository issueRepository,
+      ArticleRepository articleRepository) {
     this.workspaceRepository = workspaceRepository;
     this.memberRepository = memberRepository;
     this.inviteRepository = inviteRepository;
     this.userRepository = userRepository;
     this.issueRepository = issueRepository;
+    this.articleRepository = articleRepository;
   }
 
   public List<WorkspaceResponse> listWorkspaces(UUID userId) {
@@ -202,7 +207,11 @@ public class WorkspaceService {
 
     long issuesCreated = issueRepository.countByWorkspaceIdAndCreatedBy(workspaceId, member.getUser().getId());
     long issuesAssigned = issueRepository.countByWorkspaceIdAndAssigneeId(workspaceId, member.getUser().getId());
-    MemberOverviewStats stats = new MemberOverviewStats((int) issuesCreated, (int) issuesAssigned, 0);
+    long kbWorkedOn =
+        articleRepository.countByWorkspaceIdAndCreatedBy(workspaceId, member.getUser().getId())
+            + articleRepository.countByWorkspaceIdAndUpdatedBy(workspaceId, member.getUser().getId());
+    MemberOverviewStats stats =
+        new MemberOverviewStats((int) issuesCreated, (int) issuesAssigned, (int) kbWorkedOn);
 
     List<IssueSummary> created =
         issueRepository.findTop5ByWorkspaceIdAndCreatedByOrderByCreatedAtDesc(
@@ -230,8 +239,20 @@ public class WorkspaceService {
                         issue.getPriority().name()))
             .toList();
 
+    List<ArticleSummary> kbWorked =
+        articleRepository.findTop5ByWorkspaceIdAndUpdatedByOrderByUpdatedAtDesc(
+            workspaceId, member.getUser().getId()).stream()
+            .map(
+                article ->
+                    new ArticleSummary(
+                        article.getId().toString(),
+                        article.getKbId(),
+                        article.getTitle(),
+                        article.getUpdatedAt().toString()))
+            .toList();
+
     MemberOverviewRecent recent =
-        new MemberOverviewRecent(created, assigned, Collections.emptyList());
+        new MemberOverviewRecent(created, assigned, kbWorked);
     return new MemberOverviewResponse(user, stats, recent);
   }
 

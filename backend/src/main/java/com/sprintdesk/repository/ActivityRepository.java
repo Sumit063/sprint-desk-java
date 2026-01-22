@@ -1,0 +1,13 @@
+package com.sprintdesk.repository;
+
+import com.sprintdesk.model.Activity;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ActivityRepository extends JpaRepository<Activity, UUID> {
+  Page<Activity> findByWorkspaceId(UUID workspaceId, Pageable pageable);
+
+  void deleteByWorkspaceId(UUID workspaceId);
+}

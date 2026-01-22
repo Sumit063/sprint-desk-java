@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ArticleRepository extends JpaRepository<Article, UUID> {
   List<Article> findByWorkspaceId(UUID workspaceId);
 
+  void deleteByWorkspaceId(UUID workspaceId);
+
   List<Article> findByWorkspaceIdAndLinkedIssueIdsContains(UUID workspaceId, UUID issueId);
 
   Optional<Article> findByIdAndWorkspaceId(UUID id, UUID workspaceId);

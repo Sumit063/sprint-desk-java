@@ -13,12 +13,16 @@ import com.sprintdesk.model.WorkspaceRole;
 import com.sprintdesk.repository.ArticleRepository;
 import com.sprintdesk.repository.CommentRepository;
 import com.sprintdesk.repository.IssueRepository;
+import com.sprintdesk.repository.NotificationRepository;
+import com.sprintdesk.repository.ActivityRepository;
 import com.sprintdesk.repository.WorkspaceMemberRepository;
 import com.sprintdesk.repository.WorkspaceRepository;
+import com.sprintdesk.repository.WorkspaceInviteRepository;
 import com.sprintdesk.repository.UserRepository;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +42,9 @@ public class DemoService {
   private final IssueRepository issueRepository;
   private final ArticleRepository articleRepository;
   private final CommentRepository commentRepository;
+  private final ActivityRepository activityRepository;
+  private final NotificationRepository notificationRepository;
+  private final WorkspaceInviteRepository inviteRepository;
   private final PasswordEncoder passwordEncoder;
   private final DemoProperties demoProperties;
 
@@ -48,6 +55,9 @@ public class DemoService {
       IssueRepository issueRepository,
       ArticleRepository articleRepository,
       CommentRepository commentRepository,
+      ActivityRepository activityRepository,
+      NotificationRepository notificationRepository,
+      WorkspaceInviteRepository inviteRepository,
       PasswordEncoder passwordEncoder,
       DemoProperties demoProperties) {
     this.userRepository = userRepository;
@@ -56,6 +66,9 @@ public class DemoService {
     this.issueRepository = issueRepository;
     this.articleRepository = articleRepository;
     this.commentRepository = commentRepository;
+    this.activityRepository = activityRepository;
+    this.notificationRepository = notificationRepository;
+    this.inviteRepository = inviteRepository;
     this.passwordEncoder = passwordEncoder;
     this.demoProperties = demoProperties;
   }
@@ -74,12 +87,17 @@ public class DemoService {
   public void resetDemoData() {
     DemoUsers users = ensureDemoUsers();
 
-    workspaceRepository.findByKeyIgnoreCase("DEMO")
-        .ifPresent(workspaceRepository::delete);
+    Workspace workspace = workspaceRepository.findByKeyIgnoreCase("DEMO").orElse(null);
+    if (workspace != null) {
+      clearWorkspaceData(workspace.getId(), users);
+      workspace.setIssueCounter(0);
+      workspace.setKbCounter(0);
+    } else {
+      workspace = new Workspace();
+      workspace.setKey("DEMO");
+    }
 
-    Workspace workspace = new Workspace();
     workspace.setName("Demo Workspace");
-    workspace.setKey("DEMO");
     workspace.setOwnerId(users.owner().getId());
     workspaceRepository.save(workspace);
 
@@ -115,6 +133,22 @@ public class DemoService {
     addComment(issueOne, users.owner(), "Created demo issue. Let's fix it quickly.");
     addComment(issueTwo, users.member(), "Investigating logs now.");
     addComment(issueThree, users.owner(), "Marked as done.");
+  }
+
+  private void clearWorkspaceData(UUID workspaceId, DemoUsers users) {
+    inviteRepository.deleteByWorkspace_Id(workspaceId);
+    memberRepository.deleteByWorkspace_Id(workspaceId);
+    activityRepository.deleteByWorkspaceId(workspaceId);
+    articleRepository.deleteByWorkspaceId(workspaceId);
+
+    List<Issue> issues = issueRepository.findByWorkspaceId(workspaceId);
+    List<UUID> issueIds = issues.stream().map(Issue::getId).collect(Collectors.toList());
+    if (!issueIds.isEmpty()) {
+      commentRepository.deleteByIssueIdIn(issueIds);
+    }
+    issueRepository.deleteByWorkspaceId(workspaceId);
+
+    notificationRepository.deleteByUserIdIn(List.of(users.owner().getId(), users.member().getId()));
   }
 
   private User createUser(String email, String name, Role role) {

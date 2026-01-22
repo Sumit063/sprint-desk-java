@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ActivityRepository extends JpaRepository<Activity, UUID> {
   Page<Activity> findByWorkspaceId(UUID workspaceId, Pageable pageable);
+
+  void deleteByWorkspaceId(UUID workspaceId);
 }

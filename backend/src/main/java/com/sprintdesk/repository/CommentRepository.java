@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
   List<Comment> findByIssueIdOrderByCreatedAtAsc(UUID issueId);
+
+  void deleteByIssueIdIn(List<UUID> issueIds);
 }

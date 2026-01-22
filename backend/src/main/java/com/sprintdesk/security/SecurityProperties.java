@@ -12,6 +12,11 @@ public class SecurityProperties {
   private String refreshCookieSameSite = "Lax";
   private String refreshCookiePath = "/";
   private String refreshCookieDomain;
+  private boolean googleEnabled = false;
+  private String googleClientId;
+  private int otpMinutes = 10;
+  private int otpCodeLength = 6;
+  private boolean otpReturnCode = false;
 
   public String getJwtSecret() {
     return jwtSecret;
@@ -75,5 +80,45 @@ public class SecurityProperties {
 
   public void setRefreshCookieDomain(String refreshCookieDomain) {
     this.refreshCookieDomain = refreshCookieDomain;
+  }
+
+  public boolean isGoogleEnabled() {
+    return googleEnabled;
+  }
+
+  public void setGoogleEnabled(boolean googleEnabled) {
+    this.googleEnabled = googleEnabled;
+  }
+
+  public String getGoogleClientId() {
+    return googleClientId;
+  }
+
+  public void setGoogleClientId(String googleClientId) {
+    this.googleClientId = googleClientId;
+  }
+
+  public int getOtpMinutes() {
+    return otpMinutes;
+  }
+
+  public void setOtpMinutes(int otpMinutes) {
+    this.otpMinutes = otpMinutes;
+  }
+
+  public int getOtpCodeLength() {
+    return otpCodeLength;
+  }
+
+  public void setOtpCodeLength(int otpCodeLength) {
+    this.otpCodeLength = otpCodeLength;
+  }
+
+  public boolean isOtpReturnCode() {
+    return otpReturnCode;
+  }
+
+  public void setOtpReturnCode(boolean otpReturnCode) {
+    this.otpReturnCode = otpReturnCode;
   }
 }

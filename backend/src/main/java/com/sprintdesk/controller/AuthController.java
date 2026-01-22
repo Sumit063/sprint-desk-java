@@ -2,7 +2,10 @@ package com.sprintdesk.controller;
 
 import com.sprintdesk.dto.AuthResponse;
 import com.sprintdesk.dto.DemoLoginRequest;
+import com.sprintdesk.dto.GoogleLoginRequest;
 import com.sprintdesk.dto.LoginRequest;
+import com.sprintdesk.dto.OtpRequest;
+import com.sprintdesk.dto.OtpVerifyRequest;
 import com.sprintdesk.dto.RegisterRequest;
 import com.sprintdesk.security.RefreshCookieService;
 import com.sprintdesk.security.SecurityProperties;
@@ -11,6 +14,7 @@ import com.sprintdesk.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.WebUtils;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -75,18 +78,27 @@ public class AuthController {
   }
 
   @PostMapping("/google")
-  public ResponseEntity<Map<String, Object>> googleLogin() {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Google auth not configured");
+  public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+    AuthPayload payload = authService.loginWithGoogle(request.credential());
+    return buildResponse(payload);
   }
 
   @PostMapping("/otp/request")
-  public ResponseEntity<Map<String, Object>> otpRequest() {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "OTP login not configured");
+  public ResponseEntity<Map<String, Object>> otpRequest(@Valid @RequestBody OtpRequest request) {
+    var challenge = authService.requestOtp(request.email());
+    Map<String, Object> response = new HashMap<>();
+    response.put("ok", true);
+    response.put("expiresAt", challenge.expiresAt().toString());
+    if (properties.isOtpReturnCode()) {
+      response.put("code", challenge.code());
+    }
+    return ResponseEntity.ok(response);
   }
 
   @PostMapping("/otp/verify")
-  public ResponseEntity<Map<String, Object>> otpVerify() {
-    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "OTP login not configured");
+  public ResponseEntity<AuthResponse> otpVerify(@Valid @RequestBody OtpVerifyRequest request) {
+    AuthPayload payload = authService.loginWithOtp(request.email(), request.code());
+    return buildResponse(payload);
   }
 
   private ResponseEntity<AuthResponse> buildResponse(AuthPayload payload) {

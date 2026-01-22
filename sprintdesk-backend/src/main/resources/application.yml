@@ -4,6 +4,29 @@
 spring:
   application:
     name: sprintdesk-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/sprintdesk}
+    username: ${SPRING_DATASOURCE_USERNAME:sprintdesk}
+    password: ${SPRING_DATASOURCE_PASSWORD:sprintdesk}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+
+app:
+  security:
+    jwt-secret: ${JWT_SECRET:change-me-please-change-me-please-change-me}
+    access-token-minutes: ${JWT_ACCESS_MINUTES:15}
+    refresh-token-days: ${JWT_REFRESH_DAYS:7}
+    refresh-cookie-name: ${JWT_REFRESH_COOKIE_NAME:sprintdesk_refresh}
+    refresh-cookie-secure: ${JWT_REFRESH_COOKIE_SECURE:false}
+    refresh-cookie-same-site: ${JWT_REFRESH_COOKIE_SAMESITE:Lax}
+    refresh-cookie-path: ${JWT_REFRESH_COOKIE_PATH:/}
 
 management:
   endpoints:

@@ -27,6 +27,7 @@ app:
     refresh-cookie-secure: ${JWT_REFRESH_COOKIE_SECURE:false}
     refresh-cookie-same-site: ${JWT_REFRESH_COOKIE_SAMESITE:Lax}
     refresh-cookie-path: ${JWT_REFRESH_COOKIE_PATH:/}
+  base-url: ${APP_BASE_URL:http://localhost:5173}
 
 management:
   endpoints:

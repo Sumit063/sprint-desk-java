@@ -1,4 +1,4 @@
-# SprintDesk
+﻿# SprintDesk
 
 ![SprintDesk](frontend/assets/sprintdesk-logo.png)
 
@@ -15,8 +15,9 @@ SprintDesk is a multi-tenant issue tracker + knowledge base focused on crisp, ed
 ## Tech stack
 
 - Frontend: React + TypeScript (Vite), Tailwind CSS, Radix UI, Lucide icons
-- Backend: Node.js + Express, MongoDB + Mongoose, Socket.io
-- Auth: JWT + refresh cookies, Google ID token verification, SMTP OTP
+- Backend: Java 17 + Spring Boot (Web, Validation, Security)
+- Database: PostgreSQL (planned)
+- Realtime: WebSockets (planned, STOMP)
 
 ## Quick Start (Docker)
 
@@ -25,14 +26,13 @@ docker compose up --build
 ```
 
 - Frontend: http://localhost:5173
-- Backend: http://localhost:4000/api/health
+- Backend: http://localhost:8080/api/health
 
 ## Local Dev (No Docker)
 
 ```bash
-cd backend
-npm install
-npm run dev
+cd sprintdesk-backend
+mvn spring-boot:run
 ```
 
 ```bash
@@ -43,19 +43,12 @@ npm run dev
 
 ## Environment
 
-- `backend/.env.example`
+- `sprintdesk-backend/.env.example`
 - `frontend/.env.example`
 
 Google login requires:
 - Backend: `GOOGLE_CLIENT_ID`
 - Frontend: `VITE_GOOGLE_CLIENT_ID`
-
-Email OTP login requires SMTP settings in `backend/.env`:
-`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
-
-Demo mode:
-- `DEMO_MODE=true` enables `/api/auth/demo` for demo logins.
-- `DEMO_SEED_ON_START=true` seeds demo users/workspace on startup.
 
 ## shadcn/ui Setup
 

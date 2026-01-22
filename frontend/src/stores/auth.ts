@@ -32,6 +32,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   bootstrap: async () => {
     set({ isLoading: true });
     try {
+      if (!getAccessToken()) {
+        try {
+          const refresh = await api.post("/api/auth/refresh");
+          const token = refresh.data.accessToken ?? null;
+          setAccessToken(token);
+        } catch {
+          setAccessToken(null);
+        }
+      }
       const res = await api.get("/api/users/me");
       set({ user: res.data.user, accessToken: getAccessToken() });
     } catch {

@@ -31,8 +31,8 @@ docker compose up --build
 ## Local Dev (No Docker)
 
 ```bash
-cd sprintdesk-backend
-mvn spring-boot:run
+cd backend
+./mvnw spring-boot:run
 ```
 
 ```bash
@@ -43,7 +43,7 @@ npm run dev
 
 ## Environment
 
-- `sprintdesk-backend/.env.example`
+- `backend/.env.example`
 - `frontend/.env.example`
 
 Google login requires:

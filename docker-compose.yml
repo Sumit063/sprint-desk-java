@@ -12,7 +12,7 @@
 
   backend:
     build:
-      context: ./sprintdesk-backend
+      context: ./backend
       dockerfile: Dockerfile
     environment:
       - SPRING_PROFILES_ACTIVE=local

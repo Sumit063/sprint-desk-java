@@ -1,4 +1,4 @@
-﻿package com.sprintdesk;
+package com.sprintdesk;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

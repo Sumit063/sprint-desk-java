@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

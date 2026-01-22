@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import java.util.Collection;
 import java.util.List;

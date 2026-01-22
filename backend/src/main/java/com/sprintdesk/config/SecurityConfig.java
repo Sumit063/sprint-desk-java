@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.config;
+package com.sprintdesk.config;
 
 import com.sprintdesk.security.JwtAuthenticationFilter;
 import com.sprintdesk.security.RestAccessDeniedHandler;

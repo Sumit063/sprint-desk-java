@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprintdesk.api.ApiError;

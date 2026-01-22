@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.exception;
+package com.sprintdesk.exception;
 
 import com.sprintdesk.api.ApiError;
 import jakarta.validation.ConstraintViolationException;
@@ -43,7 +43,10 @@ public class RestExceptionHandler {
   @ExceptionHandler(ErrorResponseException.class)
   public ResponseEntity<ApiError> handleErrorResponse(ErrorResponseException ex) {
     HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
-    String message = ex.getReason() != null ? ex.getReason() : status.getReasonPhrase();
+    String message = ex.getMessage();
+    if (message == null || message.isBlank()) {
+      message = status.getReasonPhrase();
+    }
     return ResponseEntity.status(status).body(new ApiError(message, "request_failed", null));
   }
 

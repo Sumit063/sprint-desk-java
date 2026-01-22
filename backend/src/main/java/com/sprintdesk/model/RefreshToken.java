@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.model;
+package com.sprintdesk.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

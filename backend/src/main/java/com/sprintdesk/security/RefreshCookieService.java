@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import java.time.Duration;
 import org.springframework.http.HttpHeaders;

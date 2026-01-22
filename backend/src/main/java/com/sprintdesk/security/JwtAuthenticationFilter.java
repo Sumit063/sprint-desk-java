@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

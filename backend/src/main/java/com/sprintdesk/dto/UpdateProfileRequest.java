@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.dto;
+package com.sprintdesk.dto;
 
 import jakarta.validation.constraints.Size;
 

@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import com.sprintdesk.model.User;
 import io.jsonwebtoken.Claims;

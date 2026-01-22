@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.model;
+package com.sprintdesk.model;
 
 public enum Role {
   OWNER,

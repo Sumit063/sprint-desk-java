@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import java.util.UUID;
 import org.springframework.security.core.Authentication;

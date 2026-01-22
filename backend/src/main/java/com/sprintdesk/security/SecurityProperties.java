@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.security;
+package com.sprintdesk.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

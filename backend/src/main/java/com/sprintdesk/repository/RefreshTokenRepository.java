@@ -1,4 +1,4 @@
-﻿package com.sprintdesk.repository;
+package com.sprintdesk.repository;
 
 import com.sprintdesk.model.RefreshToken;
 import java.util.Optional;

@@ -5,6 +5,7 @@ import com.sprintdesk.dto.UserResponse;
 import com.sprintdesk.security.SecurityUtils;
 import com.sprintdesk.service.UserService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,20 +26,20 @@ public class UserController {
   }
 
   @GetMapping("/me")
-  public ResponseEntity<UserResponse> getMe() {
+  public ResponseEntity<Map<String, UserResponse>> getMe() {
     UUID userId = SecurityUtils.getCurrentUserId();
     if (userId == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
     }
-    return ResponseEntity.ok(userService.getUser(userId));
+    return ResponseEntity.ok(Map.of("user", userService.getUser(userId)));
   }
 
   @PatchMapping("/me")
-  public ResponseEntity<UserResponse> updateMe(@Valid @RequestBody UpdateProfileRequest request) {
+  public ResponseEntity<Map<String, UserResponse>> updateMe(@Valid @RequestBody UpdateProfileRequest request) {
     UUID userId = SecurityUtils.getCurrentUserId();
     if (userId == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
     }
-    return ResponseEntity.ok(userService.updateProfile(userId, request));
+    return ResponseEntity.ok(Map.of("user", userService.updateProfile(userId, request)));
   }
 }

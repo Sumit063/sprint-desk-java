@@ -1,6 +1,7 @@
 package com.sprintdesk.service;
 
 import com.sprintdesk.dto.CreateWorkspaceRequest;
+import com.sprintdesk.dto.IssueSummary;
 import com.sprintdesk.dto.MemberOverviewRecent;
 import com.sprintdesk.dto.MemberOverviewResponse;
 import com.sprintdesk.dto.MemberOverviewStats;
@@ -13,6 +14,7 @@ import com.sprintdesk.model.Workspace;
 import com.sprintdesk.model.WorkspaceInvite;
 import com.sprintdesk.model.WorkspaceMember;
 import com.sprintdesk.model.WorkspaceRole;
+import com.sprintdesk.repository.IssueRepository;
 import com.sprintdesk.repository.UserRepository;
 import com.sprintdesk.repository.WorkspaceInviteRepository;
 import com.sprintdesk.repository.WorkspaceMemberRepository;
@@ -34,17 +36,20 @@ public class WorkspaceService {
   private final WorkspaceMemberRepository memberRepository;
   private final WorkspaceInviteRepository inviteRepository;
   private final UserRepository userRepository;
+  private final IssueRepository issueRepository;
   private final SecureRandom random = new SecureRandom();
 
   public WorkspaceService(
       WorkspaceRepository workspaceRepository,
       WorkspaceMemberRepository memberRepository,
       WorkspaceInviteRepository inviteRepository,
-      UserRepository userRepository) {
+      UserRepository userRepository,
+      IssueRepository issueRepository) {
     this.workspaceRepository = workspaceRepository;
     this.memberRepository = memberRepository;
     this.inviteRepository = inviteRepository;
     this.userRepository = userRepository;
+    this.issueRepository = issueRepository;
   }
 
   public List<WorkspaceResponse> listWorkspaces(UUID userId) {
@@ -195,10 +200,38 @@ public class WorkspaceService {
 
     UserResponse user = toUserResponse(member.getUser());
 
-    MemberOverviewStats stats = new MemberOverviewStats(0, 0, 0);
+    long issuesCreated = issueRepository.countByWorkspaceIdAndCreatedBy(workspaceId, member.getUser().getId());
+    long issuesAssigned = issueRepository.countByWorkspaceIdAndAssigneeId(workspaceId, member.getUser().getId());
+    MemberOverviewStats stats = new MemberOverviewStats((int) issuesCreated, (int) issuesAssigned, 0);
+
+    List<IssueSummary> created =
+        issueRepository.findTop5ByWorkspaceIdAndCreatedByOrderByCreatedAtDesc(
+            workspaceId, member.getUser().getId()).stream()
+            .map(
+                issue ->
+                    new IssueSummary(
+                        issue.getId().toString(),
+                        issue.getTicketId(),
+                        issue.getTitle(),
+                        issue.getStatus().name(),
+                        issue.getPriority().name()))
+            .toList();
+
+    List<IssueSummary> assigned =
+        issueRepository.findTop5ByWorkspaceIdAndAssigneeIdOrderByCreatedAtDesc(
+            workspaceId, member.getUser().getId()).stream()
+            .map(
+                issue ->
+                    new IssueSummary(
+                        issue.getId().toString(),
+                        issue.getTicketId(),
+                        issue.getTitle(),
+                        issue.getStatus().name(),
+                        issue.getPriority().name()))
+            .toList();
+
     MemberOverviewRecent recent =
-        new MemberOverviewRecent(
-            Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        new MemberOverviewRecent(created, assigned, Collections.emptyList());
     return new MemberOverviewResponse(user, stats, recent);
   }
 

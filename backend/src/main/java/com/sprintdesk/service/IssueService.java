@@ -250,13 +250,10 @@ public class IssueService {
     }
     if (command.hasAssigneeId() && (previousAssignee == null || !previousAssignee.equals(saved.getAssigneeId()))) {
       fields.add("assigneeId");
-      changes.put(
-          "assigneeId",
-          Map.of(
-              "from",
-              previousAssignee == null ? null : previousAssignee.toString(),
-              "to",
-              saved.getAssigneeId() == null ? null : saved.getAssigneeId().toString()));
+      Map<String, Object> assigneeChange = new HashMap<>();
+      assigneeChange.put("from", previousAssignee == null ? null : previousAssignee.toString());
+      assigneeChange.put("to", saved.getAssigneeId() == null ? null : saved.getAssigneeId().toString());
+      changes.put("assigneeId", assigneeChange);
     }
     if (command.hasDueDate()) {
       fields.add("dueDate");

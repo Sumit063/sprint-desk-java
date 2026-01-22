@@ -101,17 +101,8 @@ public class DemoService {
     workspace.setOwnerId(users.owner().getId());
     workspaceRepository.save(workspace);
 
-    WorkspaceMember ownerMember = new WorkspaceMember();
-    ownerMember.setWorkspace(workspace);
-    ownerMember.setUser(users.owner());
-    ownerMember.setRole(WorkspaceRole.OWNER);
-    memberRepository.save(ownerMember);
-
-    WorkspaceMember member = new WorkspaceMember();
-    member.setWorkspace(workspace);
-    member.setUser(users.member());
-    member.setRole(WorkspaceRole.MEMBER);
-    memberRepository.save(member);
+    saveMembership(workspace, users.owner(), WorkspaceRole.OWNER);
+    saveMembership(workspace, users.member(), WorkspaceRole.MEMBER);
 
     Issue issueOne = createIssue(workspace, users.owner(), "First demo issue", IssueStatus.OPEN, IssuePriority.HIGH, users.member().getId());
     Issue issueTwo = createIssue(workspace, users.member(), "Payment webhook failing", IssueStatus.IN_PROGRESS, IssuePriority.MEDIUM, users.owner().getId());
@@ -187,6 +178,15 @@ public class DemoService {
     comment.setBody(body);
     comment.setInternal(false);
     commentRepository.save(comment);
+  }
+
+  private void saveMembership(Workspace workspace, User user, WorkspaceRole role) {
+    WorkspaceMember member = memberRepository.findByWorkspaceIdAndUserId(workspace.getId(), user.getId())
+        .orElseGet(WorkspaceMember::new);
+    member.setWorkspace(workspace);
+    member.setUser(user);
+    member.setRole(role);
+    memberRepository.save(member);
   }
 
   public record DemoUsers(User owner, User member) {}

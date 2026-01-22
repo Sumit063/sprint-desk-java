@@ -25,6 +25,8 @@ public class AuthService {
   private final JwtService jwtService;
   private final TokenService tokenService;
   private final DemoService demoService;
+  private final GoogleAuthService googleAuthService;
+  private final OtpService otpService;
 
   public AuthService(
       UserRepository userRepository,
@@ -32,13 +34,17 @@ public class AuthService {
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
       TokenService tokenService,
-      DemoService demoService) {
+      DemoService demoService,
+      GoogleAuthService googleAuthService,
+      OtpService otpService) {
     this.userRepository = userRepository;
     this.refreshTokenRepository = refreshTokenRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.tokenService = tokenService;
     this.demoService = demoService;
+    this.googleAuthService = googleAuthService;
+    this.otpService = otpService;
   }
 
   public AuthPayload register(RegisterRequest request) {
@@ -120,6 +126,46 @@ public class AuthService {
     return issueTokens(user);
   }
 
+  public AuthPayload loginWithGoogle(String credential) {
+    GoogleAuthService.GoogleProfile profile = googleAuthService.verify(credential);
+    User user = userRepository.findByEmailIgnoreCase(profile.email()).orElseGet(() -> {
+      User created = new User();
+      created.setEmail(profile.email().toLowerCase());
+      created.setName(buildName(profile.email(), profile.name()));
+      created.setAvatarUrl(profile.avatarUrl());
+      created.setPasswordHash(passwordEncoder.encode(tokenService.generateRefreshToken()));
+      created.setRole(Role.MEMBER);
+      return userRepository.save(created);
+    });
+
+    if (user.getAvatarUrl() == null && profile.avatarUrl() != null) {
+      user.setAvatarUrl(profile.avatarUrl());
+      userRepository.save(user);
+    }
+
+    return issueTokens(user);
+  }
+
+  public OtpService.OtpChallenge requestOtp(String email) {
+    return otpService.requestCode(email);
+  }
+
+  public AuthPayload loginWithOtp(String email, String code) {
+    otpService.verifyCode(email, code);
+    String normalized = email.toLowerCase();
+
+    User user = userRepository.findByEmailIgnoreCase(normalized).orElseGet(() -> {
+      User created = new User();
+      created.setEmail(normalized);
+      created.setName(buildName(normalized, null));
+      created.setPasswordHash(passwordEncoder.encode(tokenService.generateRefreshToken()));
+      created.setRole(Role.MEMBER);
+      return userRepository.save(created);
+    });
+
+    return issueTokens(user);
+  }
+
   private AuthPayload issueTokens(User user) {
     String accessToken = jwtService.generateAccessToken(user);
     String refreshToken = tokenService.generateRefreshToken();
@@ -140,5 +186,20 @@ public class AuthService {
         user.getName(),
         user.getAvatarUrl(),
         user.getContact());
+  }
+
+  private String buildName(String email, String fallback) {
+    if (fallback != null && !fallback.isBlank()) {
+      return fallback.trim();
+    }
+    String localPart = email;
+    int at = email.indexOf("@");
+    if (at > 0) {
+      localPart = email.substring(0, at);
+    }
+    if (localPart.isBlank()) {
+      return "User";
+    }
+    return Character.toUpperCase(localPart.charAt(0)) + localPart.substring(1);
   }
 }

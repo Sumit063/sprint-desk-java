@@ -16,8 +16,8 @@ SprintDesk is a multi-tenant issue tracker + knowledge base focused on crisp, ed
 
 - Frontend: React + TypeScript (Vite), Tailwind CSS, Radix UI, Lucide icons
 - Backend: Java 17 + Spring Boot (Web, Validation, Security)
-- Database: PostgreSQL (planned)
-- Realtime: WebSockets (planned, STOMP)
+- Database: PostgreSQL
+- Realtime: WebSockets (STOMP)
 
 ## Quick Start (Docker)
 
@@ -49,6 +49,9 @@ npm run dev
 Google login requires:
 - Backend: `GOOGLE_CLIENT_ID`
 - Frontend: `VITE_GOOGLE_CLIENT_ID`
+
+OTP login (local/dev):
+- Set `OTP_RETURN_CODE=true` to return the OTP in the response for testing.
 
 ## Demo Accounts (local)
 

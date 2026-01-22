@@ -27,6 +27,11 @@ app:
     refresh-cookie-secure: ${JWT_REFRESH_COOKIE_SECURE:false}
     refresh-cookie-same-site: ${JWT_REFRESH_COOKIE_SAMESITE:Lax}
     refresh-cookie-path: ${JWT_REFRESH_COOKIE_PATH:/}
+    google-enabled: ${GOOGLE_ENABLED:false}
+    google-client-id: ${GOOGLE_CLIENT_ID:}
+    otp-minutes: ${OTP_MINUTES:10}
+    otp-code-length: ${OTP_CODE_LENGTH:6}
+    otp-return-code: ${OTP_RETURN_CODE:false}
   base-url: ${APP_BASE_URL:http://localhost:5173}
   demo:
     enabled: ${DEMO_MODE:true}

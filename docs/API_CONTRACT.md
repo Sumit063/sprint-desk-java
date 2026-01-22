@@ -3,11 +3,11 @@
 This document captures the API endpoints, request payloads, and response shapes used by the existing React UI in `frontend/`.
 
 Base URL
-- UI uses `VITE_API_URL` (fallback `http://localhost:4000`) from `frontend/src/lib/api.ts`.
+- UI uses `VITE_API_URL` (fallback `http://localhost:8080`) from `frontend/src/lib/api.ts`.
 - Axios uses `withCredentials: true` and attaches `Authorization: Bearer <accessToken>` when available.
 
 Auth tokens
-- Access token is stored in memory (Zustand store) via `setAccessToken`.
+- Access token is stored in localStorage via `setAccessToken`.
 - Refresh token is expected to be stored in an HTTP-only cookie; UI calls `POST /api/auth/refresh` on 401.
 
 WebSocket (current UI)
@@ -46,7 +46,7 @@ POST `/api/auth/google`
 
 POST `/api/auth/otp/request`
 - Request: `{ email: string }`
-- Response: `{ message: string }`
+- Response: `{ ok: true, expiresAt: string, code?: string }`
 
 POST `/api/auth/otp/verify`
 - Request: `{ email: string, code: string }`

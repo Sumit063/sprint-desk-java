@@ -157,8 +157,11 @@ public class IssueController {
       if (payload.get("labels").isNull()) {
         labels = List.of();
       } else if (payload.get("labels").isArray()) {
-        labels = new ArrayList<>();
-        payload.get("labels").forEach(node -> labels.add(node.asText()));
+        List<String> collected = new ArrayList<>();
+        for (JsonNode node : payload.get("labels")) {
+          collected.add(node.asText());
+        }
+        labels = collected;
       }
     }
 

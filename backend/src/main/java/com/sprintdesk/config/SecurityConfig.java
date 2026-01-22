@@ -46,6 +46,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/api/health", "/actuator/health", "/actuator/health/**")
                     .permitAll()
+                    .requestMatchers("/ws/**")
+                    .permitAll()
                     .requestMatchers("/api/auth/**")
                     .permitAll()
                     .requestMatchers("/api/**")

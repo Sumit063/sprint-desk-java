@@ -24,18 +24,21 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final TokenService tokenService;
+  private final DemoService demoService;
 
   public AuthService(
       UserRepository userRepository,
       RefreshTokenRepository refreshTokenRepository,
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
-      TokenService tokenService) {
+      TokenService tokenService,
+      DemoService demoService) {
     this.userRepository = userRepository;
     this.refreshTokenRepository = refreshTokenRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.tokenService = tokenService;
+    this.demoService = demoService;
   }
 
   public AuthPayload register(RegisterRequest request) {
@@ -105,6 +108,16 @@ public class AuthService {
                 refreshTokenRepository.save(stored);
               }
             });
+  }
+
+  public AuthPayload loginDemo(String type) {
+    if (!demoService.isEnabled()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Demo mode disabled");
+    }
+    DemoService.DemoUsers users = demoService.ensureDemoUsers();
+    String normalized = type == null ? "" : type.trim().toLowerCase();
+    User user = "member".equals(normalized) ? users.member() : users.owner();
+    return issueTokens(user);
   }
 
   private AuthPayload issueTokens(User user) {

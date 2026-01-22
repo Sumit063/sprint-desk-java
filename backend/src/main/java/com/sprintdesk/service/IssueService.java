@@ -35,23 +35,35 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class IssueService {
+  /**
+   * Handles issue CRUD, filtering, and workspace-scoped authorization.
+   */
   private final IssueRepository issueRepository;
   private final WorkspaceRepository workspaceRepository;
   private final WorkspaceMemberRepository memberRepository;
   private final UserRepository userRepository;
   private final WorkspaceService workspaceService;
+  private final ActivityService activityService;
+  private final NotificationService notificationService;
+  private final RealtimeService realtimeService;
 
   public IssueService(
       IssueRepository issueRepository,
       WorkspaceRepository workspaceRepository,
       WorkspaceMemberRepository memberRepository,
       UserRepository userRepository,
-      WorkspaceService workspaceService) {
+      WorkspaceService workspaceService,
+      ActivityService activityService,
+      NotificationService notificationService,
+      RealtimeService realtimeService) {
     this.issueRepository = issueRepository;
     this.workspaceRepository = workspaceRepository;
     this.memberRepository = memberRepository;
     this.userRepository = userRepository;
     this.workspaceService = workspaceService;
+    this.activityService = activityService;
+    this.notificationService = notificationService;
+    this.realtimeService = realtimeService;
   }
 
   public IssuePageResult listIssues(UUID workspaceId, UUID userId, IssueFilter filter) {
@@ -136,6 +148,28 @@ public class IssueService {
     }
 
     Issue saved = issueRepository.save(issue);
+
+    activityService.logActivity(
+        workspaceId,
+        userId,
+        saved.getId(),
+        "issue_created",
+        Map.of("title", saved.getTitle()));
+
+    realtimeService.publishWorkspaceEvent(
+        workspaceId.toString(),
+        "issue_created",
+        Map.of("issueId", saved.getId().toString(), "title", saved.getTitle(), "actorId", userId.toString()));
+
+    if (saved.getAssigneeId() != null && !saved.getAssigneeId().equals(userId)) {
+      notificationService.createNotification(
+          saved.getAssigneeId(),
+          workspaceId,
+          saved.getId(),
+          "assigned",
+          "You were assigned to issue \"" + saved.getTitle() + "\"");
+    }
+
     return mapIssue(saved, loadUsers(saved));
   }
 
@@ -149,6 +183,13 @@ public class IssueService {
             .findByIdAndWorkspaceId(issueId, workspaceId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found"));
 
+    String previousTitle = issue.getTitle();
+    String previousDescription = issue.getDescription();
+    IssueStatus previousStatus = issue.getStatus();
+    IssuePriority previousPriority = issue.getPriority();
+    UUID previousAssignee = issue.getAssigneeId();
+    List<String> previousLabels = new ArrayList<>(issue.getLabels());
+
     if (command.hasTitle()) {
       if (command.title() == null || command.title().isBlank()) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title is required");
@@ -159,9 +200,15 @@ public class IssueService {
       issue.setDescription(command.description() == null ? "" : command.description());
     }
     if (command.hasStatus()) {
+      if (command.status() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status is required");
+      }
       issue.setStatus(command.status());
     }
     if (command.hasPriority()) {
+      if (command.priority() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Priority is required");
+      }
       issue.setPriority(command.priority());
     }
     if (command.hasLabels()) {
@@ -179,6 +226,72 @@ public class IssueService {
     }
 
     Issue saved = issueRepository.save(issue);
+
+    List<String> fields = new ArrayList<>();
+    Map<String, Object> changes = new HashMap<>();
+
+    if (command.hasTitle() && !previousTitle.equals(saved.getTitle())) {
+      fields.add("title");
+      changes.put("title", Map.of("from", previousTitle, "to", saved.getTitle()));
+    }
+    if (command.hasDescription() && !previousDescription.equals(saved.getDescription())) {
+      fields.add("description");
+    }
+    if (command.hasStatus() && previousStatus != saved.getStatus()) {
+      fields.add("status");
+      changes.put("status", Map.of("from", previousStatus.name(), "to", saved.getStatus().name()));
+    }
+    if (command.hasPriority() && previousPriority != saved.getPriority()) {
+      fields.add("priority");
+      changes.put("priority", Map.of("from", previousPriority.name(), "to", saved.getPriority().name()));
+    }
+    if (command.hasLabels() && !previousLabels.equals(saved.getLabels())) {
+      fields.add("labels");
+    }
+    if (command.hasAssigneeId() && (previousAssignee == null || !previousAssignee.equals(saved.getAssigneeId()))) {
+      fields.add("assigneeId");
+      changes.put(
+          "assigneeId",
+          Map.of(
+              "from",
+              previousAssignee == null ? null : previousAssignee.toString(),
+              "to",
+              saved.getAssigneeId() == null ? null : saved.getAssigneeId().toString()));
+    }
+    if (command.hasDueDate()) {
+      fields.add("dueDate");
+    }
+
+    if (!fields.isEmpty()) {
+      String action =
+          command.hasStatus() && saved.getStatus() == IssueStatus.DONE
+              ? "issue_resolved"
+              : "issue_updated";
+      activityService.logActivity(
+          workspaceId,
+          userId,
+          saved.getId(),
+          action,
+          Map.of("fields", fields, "changes", changes));
+
+      realtimeService.publishWorkspaceEvent(
+          workspaceId.toString(),
+          "issue_updated",
+          Map.of("issueId", saved.getId().toString(), "fields", fields, "actorId", userId.toString()));
+    }
+
+    if (command.hasAssigneeId()
+        && saved.getAssigneeId() != null
+        && !saved.getAssigneeId().equals(previousAssignee)
+        && !saved.getAssigneeId().equals(userId)) {
+      notificationService.createNotification(
+          saved.getAssigneeId(),
+          workspaceId,
+          saved.getId(),
+          "assigned",
+          "You were assigned to issue \"" + saved.getTitle() + "\"");
+    }
+
     return mapIssue(saved, loadUsers(saved));
   }
 
@@ -191,6 +304,13 @@ public class IssueService {
             .findByIdAndWorkspaceId(issueId, workspaceId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found"));
     issueRepository.delete(issue);
+
+    activityService.logActivity(
+        workspaceId,
+        userId,
+        issueId,
+        "issue_deleted",
+        Map.of("title", issue.getTitle()));
   }
 
   private Optional<IssueStatus> parseStatus(String value) {

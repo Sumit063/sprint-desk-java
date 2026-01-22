@@ -28,6 +28,9 @@ app:
     refresh-cookie-same-site: ${JWT_REFRESH_COOKIE_SAMESITE:Lax}
     refresh-cookie-path: ${JWT_REFRESH_COOKIE_PATH:/}
   base-url: ${APP_BASE_URL:http://localhost:5173}
+  demo:
+    enabled: ${DEMO_MODE:true}
+    seed-on-start: ${DEMO_SEED_ON_START:true}
 
 management:
   endpoints:

@@ -1,6 +1,7 @@
 package com.sprintdesk.controller;
 
 import com.sprintdesk.dto.AuthResponse;
+import com.sprintdesk.dto.DemoLoginRequest;
 import com.sprintdesk.dto.LoginRequest;
 import com.sprintdesk.dto.RegisterRequest;
 import com.sprintdesk.security.RefreshCookieService;
@@ -12,12 +13,14 @@ import jakarta.validation.Valid;
 import java.time.Duration;
 import java.util.Map;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.WebUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -63,6 +66,27 @@ public class AuthController {
     refreshCookieService.clearCookie(headers);
 
     return ResponseEntity.ok().headers(headers).body(Map.of("ok", true));
+  }
+
+  @PostMapping("/demo")
+  public ResponseEntity<AuthResponse> demoLogin(@Valid @RequestBody DemoLoginRequest request) {
+    AuthPayload payload = authService.loginDemo(request.type());
+    return buildResponse(payload);
+  }
+
+  @PostMapping("/google")
+  public ResponseEntity<Map<String, Object>> googleLogin() {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Google auth not configured");
+  }
+
+  @PostMapping("/otp/request")
+  public ResponseEntity<Map<String, Object>> otpRequest() {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "OTP login not configured");
+  }
+
+  @PostMapping("/otp/verify")
+  public ResponseEntity<Map<String, Object>> otpVerify() {
+    throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "OTP login not configured");
   }
 
   private ResponseEntity<AuthResponse> buildResponse(AuthPayload payload) {
